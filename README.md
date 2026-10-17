@@ -82,10 +82,3 @@ These decisions are recorded in `decision_log.md` and should be reconciled with 
 - `design_document.md`: design document source
 - `docs/design_document.pdf`: generated design document
 
-## Viva preparation
-Be prepared to explain:
-- Why cabinet count uses ceiling rounding.
-- Why the weekend multiplier is applied per day before the multi-day discount.
-- Why fleet reservations are checked for all dates before any capacity is consumed.
-- Why `Decimal` is used for money.
-- How you would change a business rule and update its tests.
