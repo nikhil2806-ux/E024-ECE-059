@@ -1,0 +1,7 @@
+pitch,environment,rate_per_sq_ft_per_day,cabinet_area_sq_ft,fleet_cabinet_count
+P2.5,INDOOR,120,10,100
+P2.5,OUTDOOR,150,10,80
+P3.9,INDOOR,90,10,120
+P3.9,OUTDOOR,110,10,100
+P6,INDOOR,60,10,150
+P6,OUTDOOR,75,10,120

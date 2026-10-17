@@ -1,0 +1,4 @@
+request_id,client,width_ft,height_ft,pitch,environment,start_date,days,distance_km,power_source
+E001,Client A,12,8,P2.5,INDOOR,2026-10-23,4,20,GENERATOR
+E002,Client B,15,10,P3.9,OUTDOOR,2026-10-24,2,15,MAINS
+E003,Client C,20,15,P6,INDOOR,2026-10-26,8,35,GENERATOR

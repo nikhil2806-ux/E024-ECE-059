@@ -1,0 +1,28 @@
+test_competing_for_last_cabinets (test_fleet.FleetTests.test_competing_for_last_cabinets) ... ok
+test_different_dates_do_not_conflict (test_fleet.FleetTests.test_different_dates_do_not_conflict) ... ok
+test_failed_multiday_request_reserves_nothing (test_fleet.FleetTests.test_failed_multiday_request_reserves_nothing) ... ok
+test_duplicate_rate_card_entry_rejected (test_loader.LoaderTests.test_duplicate_rate_card_entry_rejected) ... ok
+test_invalid_event_dimensions_rejected (test_loader.LoaderTests.test_invalid_event_dimensions_rejected) ... ok
+test_valid_rate_card (test_loader.LoaderTests.test_valid_rate_card) ... ok
+test_15_km_transport_free (test_quotation.QuotationTests.test_15_km_transport_free) ... ok
+test_above_300_second_vehicle (test_quotation.QuotationTests.test_above_300_second_vehicle) ... ok
+test_cabinet_rounding_up (test_quotation.QuotationTests.test_cabinet_rounding_up) ... ok
+test_eight_day_discount (test_quotation.QuotationTests.test_eight_day_discount) ... ok
+test_exactly_100_setup (test_quotation.QuotationTests.test_exactly_100_setup) ... ok
+test_exactly_300_no_second_vehicle (test_quotation.QuotationTests.test_exactly_300_no_second_vehicle) ... ok
+test_generator_charge (test_quotation.QuotationTests.test_generator_charge) ... ok
+test_half_up_rounding (test_quotation.QuotationTests.test_half_up_rounding) ... ok
+test_operator_boundary_150_and_151 (test_quotation.QuotationTests.test_operator_boundary_150_and_151) ... ok
+test_outdoor_rigging (test_quotation.QuotationTests.test_outdoor_rigging) ... ok
+test_setup_above_100 (test_quotation.QuotationTests.test_setup_above_100) ... ok
+test_weekend_before_four_day_discount (test_quotation.QuotationTests.test_weekend_before_four_day_discount) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.003s
+
+OK
+
+--- SAMPLE RUN ---
+Processed 3 request(s); generated 3 quotation(s).
+Invalid/unsupported requests: 0.
+Outputs written to: /mnt/data/E024-ECE-059/output
