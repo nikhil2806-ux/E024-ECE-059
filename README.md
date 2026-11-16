@@ -1,33 +1,43 @@
 # E024-ECE-059 — LED Display and Signage Rental Quotation Engine
 
-A command-line Python 3.10+ application for calculating LED video-wall rental quotations and checking fleet availability by pitch and date.
+A command-file-driven Python 3.10+ application that calculates LED video-wall rental quotations and checks cabinet availability by pitch and date.
 
 ## Team
 - Team ID: E024
 - Members: Nandini Girish and Nikhil P Karamadi
-- Problem: ECE-059
+- Problem statement: ECE-059
 
 ## Requirements
 - Python 3.10 or newer
-- No third-party Python packages required to run the application
+- No third-party packages required
 
 ## Run
-From the repository root:
+Keep `commands.txt`, `rate_card.csv`, and `requests.csv` in the repository root. From that directory run:
 
 ```bash
 python3 main.py
 ```
 
-Custom paths are supported:
+The command file selects the input files and the fleet reporting date range. To specify another command file or output directory:
 
 ```bash
-python3 main.py --rate-card data/rate_card.csv --requests data/event_requests.csv --output output
+python3 main.py --commands commands.txt --output output
 ```
 
-The application writes:
-- `output/quotations.csv`
-- `output/availability.csv`
-- `output/errors.csv`
+## Official input files
+- `commands.txt`: commands are read from top to bottom.
+- `rate_card.csv`: official ECE-059 rate card (pitch, environment, daily rate, cabinet area and fleet count).
+- `requests.csv`: official event requests, processed in file order.
+- `sample_data_README.md`: official sample-pack column reference, planted scenarios and evaluation output specification.
+
+The request's environment is obtained from the matching pitch in the rate card; it is not a column in `requests.csv`.
+
+## Output files
+The application writes exactly these evaluation CSVs to `output/`:
+- `quotations.csv`: one row per request in input order.
+- `fleet_usage.csv`: one row per pitch per date, ordered by date then pitch.
+
+Column names and order follow the official sample-pack README.
 
 ## Run tests
 
@@ -35,50 +45,28 @@ The application writes:
 python3 -m unittest discover -s tests -v
 ```
 
-## Input formats
-
-### Rate card
-Required columns: `pitch,environment,rate_per_sq_ft_per_day,cabinet_area_sq_ft,fleet_cabinet_count`
-
-### Event requests
-Required columns: `request_id,client,width_ft,height_ft,pitch,environment,start_date,days,distance_km,power_source`
-
-Use `INDOOR` or `OUTDOOR`, `GENERATOR` or `MAINS`, and ISO dates (`YYYY-MM-DD`).
-
-**The included CSV values are illustrative development data only. Replace them with the official files supplied by 10 SECONDS.**
-
-## Business-rule overview
-- Cabinet count is rounded up.
-- Billable area equals cabinet count times cabinet area.
-- Weekend rental rate is 1.25× per Saturday/Sunday before the multi-day discount.
-- Rental discount: 10% for 4–7 days, 20% for 8+ days.
-- Setup: ₹4,000 through 100 sq ft, then ₹35 per sq ft above 100.
-- Outdoor rigging: 20% of setup.
-- Transport: ₹45 per km beyond 15 km, each way; return trip included.
-- A billable wall above 300 sq ft requires a second vehicle.
+## Implemented business rules
+- Cabinet count is rounded up; billable area is cabinets multiplied by cabinet area.
+- Saturday and Sunday rental days are charged at 1.25×.
+- Rental discount: 10% for 4–7 days; 20% for 8+ days.
+- Setup: ₹4,000 for billable area up to 100 sq ft; otherwise ₹4,000 + ₹35 for each sq ft above 100.
+- Outdoor setup includes a 20% rigging surcharge.
+- Transport is ₹45 per km beyond 15 km, each way; return trip is included.
+- Billable area above 300 sq ft requires a second vehicle at the same transport charge.
 - Generator: ₹2,500 per day.
-- Operators: one per 150 sq ft or part thereof, ₹1,500 per operator per day.
-- GST: 18%.
-- Fleet bookings are accepted only if every date has sufficient cabinets. Rejected bookings reserve nothing.
-
-## Important assumptions to confirm against official expected output
-1. Requests are processed in input-file order.
-2. Setup above 100 sq ft means ₹4,000 plus ₹35 for each sq ft above 100.
-3. The second vehicle has the same transport charge as the first.
-4. Monetary values use decimal arithmetic and `ROUND_HALF_UP`; each displayed line is rounded to whole rupees, and GST is calculated on the sum of rounded pre-tax lines.
-5. Unavailable requests still receive an indicative quotation breakdown.
-6. Fleet capacity is keyed by pitch and environment because the rate card is supplied for indoor/outdoor entries. If the official rules define a shared fleet across environments, update `src/fleet.py`.
-
-These decisions are recorded in `decision_log.md` and should be reconciled with the visible expected output when supplied.
+- Operators: one per 150 sq ft or part thereof, at ₹1,500 per operator per day.
+- GST: 18% of subtotal.
+- Each monetary line is rounded half-up to whole rupees; rounded lines are added for subtotal, then GST is rounded half-up.
+- Fleet capacity is shared per pitch across environments. A request reserves cabinets only if every event date is within capacity. An unavailable request reserves nothing and reports the largest date-specific shortfall.
 
 ## Project layout
-- `main.py`: command-line entry point
+- `main.py`: command-file runner and application entry point
 - `src/models.py`: data models
 - `src/loader.py`: CSV parsing and validation
-- `src/fleet.py`: date-by-date availability and reservation
-- `src/quotation.py`: pricing rules
-- `src/writer.py`: output CSV generation
-- `tests/`: automated tests
+- `src/fleet.py`: date-by-date fleet availability and reservation
+- `src/quotation.py`: quotation calculations
+- `src/writer.py`: evaluation-format CSV output
+- `tests/`: unit and official-pack regression tests
 - `design_document.md`: design document source
-- `docs/design_document.pdf`: generated design document
-
+- `decision_log.md`: implementation decisions and rationale
+- `docs/`: supporting project documents

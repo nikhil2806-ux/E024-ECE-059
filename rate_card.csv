@@ -1,0 +1,6 @@
+pitch,environment,rate_per_sqft_day_rs,cabinet_area_sqft,fleet_cabinets
+P2.5,INDOOR,38.00,4.0,120
+P2.9,INDOOR,32.00,4.0,150
+P3.9,OUTDOOR,30.00,6.0,140
+P4.8,OUTDOOR,26.00,6.0,100
+P6,OUTDOOR,22.00,6.0,160

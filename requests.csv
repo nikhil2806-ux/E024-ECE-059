@@ -1,0 +1,31 @@
+request_id,received_date,client,event_name,venue,wall_width_ft,wall_height_ft,pitch,start_date,days,distance_km,power_source
+EVR-001,2026-10-05,Bengaluru Tech Summit,Expo hall wall,UB City Amphitheatre,14.0,8.0,P6,2026-11-08,2,8,GENERATOR
+EVR-002,2026-10-06,Prestige Group,Project launch,Sheraton Grand Hebbal,10.0,10.0,P2.9,2026-11-04,2,12,MAINS
+EVR-003,2026-10-13,Sunburn Arena,Music night,Nandi Hills Resort,20.0,15.0,P4.8,2026-11-10,3,38,GENERATOR
+EVR-004,2026-10-19,Titan Company,Store opening,BIEC Tumakuru Road,16.0,9.0,P3.9,2026-11-20,4,22,GENERATOR
+EVR-005,2026-10-22,Wipro Ltd,Town hall,Nandi Hills Resort,20.0,8.0,P2.9,2026-11-24,5,45,MAINS
+EVR-006,2026-10-23,Christ University,Fest main stage,Nandi Hills Resort,24.5,14.0,P4.8,2026-11-18,3,45,MAINS
+EVR-007,2026-10-24,Phoenix Marketcity,Christmas carnival,Jayamahal Palace,12.0,8.0,P2.5,2026-11-26,1,15,MAINS
+EVR-008,2026-10-26,Prestige Group,Project launch,Freedom Park,14.0,10.0,P2.9,2026-11-10,3,25,MAINS
+EVR-009,2026-10-29,Mysuru Dasara Committee,Cultural night,BIEC Tumakuru Road,10.5,14.0,P6,2026-11-29,2,12,GENERATOR
+EVR-010,2026-10-30,Sunburn Arena,Music night,KTPO Whitefield,24.0,12.0,P4.8,2026-12-04,5,60,GENERATOR
+EVR-011,2026-10-30,Royal Enfield Dealers Assn,Dealer meet,UB City Amphitheatre,24.0,12.0,P6,2026-11-14,2,25,GENERATOR
+EVR-012,2026-10-31,Kanakapura Road Weddings,Wedding reception,BIEC Tumakuru Road,12.5,14.0,P4.8,2026-11-21,1,32,GENERATOR
+EVR-013,2026-11-02,Titan Company,Store opening,Sheraton Grand Hebbal,10.0,6.0,P2.5,2026-11-30,1,60,MAINS
+EVR-014,2026-11-03,Shiv Sena Ganesh Mandal,Ganesh festival,Mysuru Palace Grounds,30.0,12.0,P6,2026-11-30,8,41,GENERATOR
+EVR-015,2026-11-05,Brigade Enterprises,Customer meet,Nandi Hills Resort,24.5,12.0,P6,2026-11-25,1,25,MAINS
+EVR-016,2026-11-06,Shiv Sena Ganesh Mandal,Ganesh festival,Manpho Convention Centre,12.5,8.0,P2.9,2026-12-04,2,45,MAINS
+EVR-017,2026-11-07,Titan Company,Store opening,Sheraton Grand Hebbal,14.0,8.0,P6,2026-12-11,1,25,MAINS
+EVR-018,2026-11-08,Wipro Ltd,Town hall,Bhartiya City Pavilion,8.0,12.0,P2.9,2026-12-09,3,60,MAINS
+EVR-019,2026-11-10,Titan Company,Store opening,KTPO Whitefield,16.0,9.0,P4.8,2026-11-29,5,60,MAINS
+EVR-020,2026-11-12,Phoenix Marketcity,Christmas carnival,BIEC Tumakuru Road,8.0,14.0,P3.9,2026-12-02,2,25,GENERATOR
+EVR-021,2026-11-12,Phoenix Marketcity,Christmas carnival,Mysuru Palace Grounds,12.0,8.0,P2.5,2026-12-01,1,16,MAINS
+EVR-022,2026-11-12,KSCA,Cricket fan park,Nandi Hills Resort,24.0,16.0,P2.5,2026-12-11,4,9,MAINS
+EVR-023,2026-11-20,Brigade Enterprises,Customer meet,Jayamahal Palace,15.0,10.0,P6,2026-12-23,1,6,MAINS
+EVR-024,2026-11-21,Shiv Sena Ganesh Mandal,Ganesh festival,BIEC Tumakuru Road,20.5,8.0,P4.8,2026-12-25,2,32,GENERATOR
+EVR-025,2026-11-21,Kanakapura Road Weddings,Wedding reception,Mysuru Palace Grounds,12.0,8.0,P2.5,2026-12-12,2,11,MAINS
+EVR-026,2026-11-22,Sunburn Arena,Music night,Bhartiya City Pavilion,6.0,4.0,P2.5,2026-12-12,3,14,MAINS
+EVR-027,2026-11-25,Shiv Sena Ganesh Mandal,Ganesh festival,St Joseph's College Ground,13.5,7.0,P2.9,2026-12-15,2,27,MAINS
+EVR-028,2026-11-30,Infosys Foundation,Annual day,Mysuru Palace Grounds,15.0,10.5,P6,2026-12-24,1,6,MAINS
+EVR-029,2026-12-04,Phoenix Marketcity,Christmas carnival,Palace Grounds,18.0,9.0,P4.8,2026-12-19,5,45,GENERATOR
+EVR-030,2026-12-07,Taj West End,Corporate gala,Palace Grounds,24.5,14.0,P4.8,2026-12-23,1,18,MAINS

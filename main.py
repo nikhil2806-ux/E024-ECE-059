@@ -1,48 +1,45 @@
-"""Entry point for the E024-ECE-059 quotation engine."""
+"""Command-driven ECE-059 LED rental quotation engine."""
 import argparse
-import csv
-import sys
+from datetime import datetime
 from pathlib import Path
-
 from src.loader import load_rate_card, load_event_requests, InputDataError
 from src.fleet import FleetManager
 from src.quotation import calculate_quotation
 from src.writer import write_outputs
 
-
 def main():
-    parser = argparse.ArgumentParser(description="LED Display and Signage Rental Quotation Engine")
-    parser.add_argument("--rate-card", default="data/rate_card.csv", help="Path to rate-card CSV")
-    parser.add_argument("--requests", default="data/event_requests.csv", help="Path to event-request CSV")
-    parser.add_argument("--output", default="output", help="Directory for generated CSV files")
-    args = parser.parse_args()
-
+    ap=argparse.ArgumentParser(description='ECE-059 LED Display and Signage Rental Quotation Engine')
+    ap.add_argument('--rate-card',default='rate_card.csv')
+    ap.add_argument('--requests',default='requests.csv')
+    ap.add_argument('--commands',default='commands.txt')
+    ap.add_argument('--output',default='output')
+    a=ap.parse_args()
     try:
-        rate_card = load_rate_card(args.rate_card)
-        requests = load_event_requests(args.requests)
-        fleet = FleetManager(rate_card)
-        quotations = []
-        errors = []
-        for request in requests:
-            key = (request.pitch, request.environment)
-            if key not in rate_card:
-                errors.append({
-                    "request_id": request.request_id,
-                    "error_code": "UNKNOWN_RATE",
-                    "error_message": f"No rate card entry for {request.pitch}/{request.environment}"
-                })
-                continue
-            quotations.append(calculate_quotation(request, rate_card[key], fleet))
-        write_outputs(Path(args.output), quotations, errors)
-    except InputDataError as exc:
-        print(f"Input error: {exc}", file=sys.stderr)
+        # Interpret the supplied command file in order; load commands select the inputs.
+        rate_path,request_path=a.rate_card,a.requests
+        commands=[]
+        with open(a.commands,encoding='utf-8-sig') as f:
+            commands=[line.strip() for line in f if line.strip() and not line.lstrip().startswith('#')]
+        for line in commands:
+            parts=line.split('|')
+            if parts[0]=='LOAD_RATE_CARD': rate_path=str(Path(a.commands).parent/parts[1])
+            elif parts[0]=='LOAD_REQUESTS': request_path=str(Path(a.commands).parent/parts[1])
+        rate_card=load_rate_card(rate_path)
+        requests=load_event_requests(request_path,rate_card)
+        fleet=FleetManager(rate_card); quotes=[]
+        for req in requests:
+            q=calculate_quotation(req,rate_card[req.pitch],fleet); q._pitch=req.pitch; quotes.append(q)
+        start,end=datetime.strptime('2026-11-01','%Y-%m-%d').date(),datetime.strptime('2026-12-31','%Y-%m-%d').date()
+        for line in commands:
+            parts=line.split('|')
+            if parts[0]=='PRINT_FLEET':
+                start=datetime.strptime(parts[1],'%Y-%m-%d').date(); end=datetime.strptime(parts[2],'%Y-%m-%d').date()
+        fleet_rows=fleet.usage_rows(rate_card,start,end)
+        write_outputs(Path(a.output),quotes,fleet_rows)
+    except (InputDataError,OSError,ValueError) as exc:
+        print(f'Input/command error: {exc}')
         return 2
-
-    print(f"Processed {len(requests)} request(s); generated {len(quotations)} quotation(s).")
-    print(f"Invalid/unsupported requests: {len(errors)}.")
-    print(f"Outputs written to: {Path(args.output).resolve()}")
+    print(f'Processed {len(requests)} request(s); generated {len(quotes)} quotation(s).')
+    print(f'Outputs written to: {Path(a.output).resolve()}')
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__=='__main__': raise SystemExit(main())

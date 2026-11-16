@@ -35,10 +35,10 @@ Attributes: `request_id`, `client`, `width_ft`, `height_ft`, `pitch`, `environme
 Contains requested area, cabinet count, billable area, rental gross, discount, net rental, setup, rigging, transport, generator, operator count and charge, pre-tax total, GST, grand total, and availability status/shortfall.
 
 ### Fleet allocation
-Conceptually identified by `(pitch, environment, date)`. Each accepted event reserves its required cabinet count on each date. The booking is committed only after every requested date passes.
+Identified by `(pitch, date)`. Fleet capacity is shared per pitch. Each accepted event reserves its required cabinet count on each date; the booking is committed only after every requested date passes.
 
 Relationship summary:
-- One rate-card entry is selected by each request's `(pitch, environment)`.
+- One rate-card entry is selected by each request's `pitch`; its environment determines the outdoor setup surcharge.
 - One request produces one quotation.
 - One accepted request creates one allocation per rental date.
 - A rejected request creates no allocations.
@@ -55,7 +55,7 @@ Relationship summary:
 - **BR-09:** If billable area >300 sq ft, use two vehicles; otherwise one.
 - **BR-10:** Generator charge = ₹2,500 × rental days only for GENERATOR power.
 - **BR-11:** Operator count = ceiling(billable area / 150); charge = count × ₹1,500 × days.
-- **BR-12:** Check requested cabinet capacity for each pitch/environment/date.
+- **BR-12:** Check requested cabinet capacity for each pitch/date; indoor and outdoor do not create separate fleet pools.
 - **BR-13:** If any date is over capacity, mark UNAVAILABLE and record shortfall; do not reserve any date for that request.
 - **BR-14:** GST = 18% of the pre-tax total.
 - **BR-15:** Round printed monetary lines to whole rupees using the documented rounding policy.
@@ -103,17 +103,16 @@ RESERVE_CAPACITY   DO_NOT_RESERVE
 
 ## 8. Input formats
 `rate_card.csv` fields:
-`pitch,environment,rate_per_sq_ft_per_day,cabinet_area_sq_ft,fleet_cabinet_count`
+`pitch,environment,rate_per_sqft_day_rs,cabinet_area_sqft,fleet_cabinets`
 
-`event_requests.csv` fields:
-`request_id,client,width_ft,height_ft,pitch,environment,start_date,days,distance_km,power_source`
+`requests.csv` fields:
+`request_id,received_date,client,event_name,venue,wall_width_ft,wall_height_ft,pitch,start_date,days,distance_km,power_source`
 
 Dates use `YYYY-MM-DD`. Environment values are `INDOOR` or `OUTDOOR`; power values are `GENERATOR` or `MAINS`.
 
 ## 9. Output formats
-- `quotations.csv`: itemized monetary lines, areas, cabinets, status, pre-tax total, GST and grand total.
-- `availability.csv`: status, cabinets required, affected dates and shortfall.
-- `errors.csv`: invalid/unsupported request IDs and explanations.
+- `quotations.csv`: one row per request with the official 15-column evaluation schema.
+- `fleet_usage.csv`: one row per pitch per date with held, total and free cabinets.
 
 ## 10. Edge-case test plan
 1. Billable area exactly 100 sq ft: setup ₹4,000.
@@ -131,14 +130,8 @@ Dates use `YYYY-MM-DD`. Environment values are `INDOOR` or `OUTDOOR`; power valu
 13. Invalid dates, negative distances, zero dimensions, unsupported power and duplicate rate entries.
 14. Half-rupee rounding uses the documented rule.
 
-## 11. Assumptions requiring verification
-The assignment brief leaves some implementation details unspecified. These must be checked against the official visible expected outputs:
-- Whether ₹35 applies only to each square foot above 100, or is intended as a different tier calculation.
-- Whether indoor/outdoor rates represent separate fleet pools or shared physical cabinets.
-- The exact rounding sequence for lines, totals and GST.
-- Whether unavailable requests should show an indicative monetary quote.
-- Exact output filenames, column order and text formatting.
-- Whether malformed individual requests should stop the batch or be written to the error file.
+## 11. Official sample-pack conventions
+The official sample-pack README resolves the main implementation assumptions: setup above 100 sq ft is ₹4,000 + ₹35 per excess sq ft; fleet is tracked per pitch/date; unavailable requests still carry a full quotation; shortfall is the maximum date-specific shortage; each line is rounded half-up before subtotal and GST; and output filenames and column order are fixed. The sample pack does not provide expected quotation values for these 30 requests, so the planted scenarios are used as regression checks.
 
 ## 12. Testing and reproducibility
 Run tests with:
@@ -147,4 +140,4 @@ Run tests with:
 Run the application with:
 `python3 main.py`
 
-The included rate-card and event-request CSVs are synthetic development fixtures and must be replaced by the official sample data before output matching.
+The root-level `rate_card.csv`, `requests.csv`, and `commands.txt` are the official Team E024 sample-data files supplied by 10 SECONDS. The expected-output schema and planted scenarios are documented in `sample_data_README.md`.

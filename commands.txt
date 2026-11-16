@@ -1,0 +1,6 @@
+# ECE-059 command file - load the rate card and requests, quote every request in file order with the fleet check, then print
+LOAD_RATE_CARD|rate_card.csv
+LOAD_REQUESTS|requests.csv
+QUOTE_ALL
+PRINT_QUOTES
+PRINT_FLEET|2026-11-01|2026-12-31

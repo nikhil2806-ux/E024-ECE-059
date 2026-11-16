@@ -13,10 +13,10 @@ Run `python3 main.py`. Open `output/quotations.csv`. Explain requested area, cab
 Show the test for a four-day event spanning a weekend. Explain that Saturday and Sunday rental rates are multiplied by 1.25 individually before the 10% multi-day discount is applied to the daily sum.
 
 ## 3:00–4:00 — Demonstrate fleet handling
-Explain that capacity is checked for every requested date. If one date fails, the whole booking is unavailable and no cabinets are reserved for it. Show the fleet unit tests.
+Explain that fleet capacity is shared per pitch and checked for every requested date. If one date fails, the whole booking is unavailable and no cabinets are reserved for it. Show the fleet unit tests.
 
 ## 4:00–4:40 — Run tests
 Run `python3 -m unittest discover -s tests -v`. Explain the boundary tests for 100 sq ft, 300 sq ft, 15 km, operator thresholds and competing requests.
 
 ## 4:40–5:00 — Close
-Mention validation, deterministic processing, the decision log, and that official sample inputs/expected outputs will be used for final conformance verification.
+Mention validation, deterministic processing, the decision log, and that the official 30-request sample pack has been used for regression checks. The pack does not include expected quotation totals; its planted scenarios and required output schema are covered by our tests.
