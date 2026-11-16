@@ -19,3 +19,7 @@
 | D-15 | Shortfall is the largest `(cabinets already held + cabinets needed − fleet)` across the event dates. | Explicit official sample-pack convention. |
 | D-16 | Environment is selected from the rate-card entry matching the request pitch. | Official `requests.csv` has no environment column; each pitch maps to one rate-card row. |
 | D-17 | Write only `quotations.csv` and `fleet_usage.csv`, using the official column order. | Explicit official evaluation output specification. |
+| D-18 | Execute each command immediately in file order; reject unknown commands, invalid arguments and invalid command sequencing. | Audit improvement to match the official command-file contract. |
+| D-19 | Validate all documented request columns, ISO dates, EVR-nnn IDs, integer day/distance fields and allowed values before quoting. | Audit improvement to reject malformed input clearly. |
+| D-20 | Write quotations and fleet usage only when their respective PRINT commands are reached. | Audit improvement to make PRINT commands control output generation. |
+

@@ -38,5 +38,24 @@ class LoaderTests(unittest.TestCase):
         self.assertEqual(requests[0].request_id, "EVR-001")
         self.assertEqual(requests[-1].request_id, "EVR-030")
 
+    def test_missing_received_date_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            rates = Path(temp) / "rates.csv"
+            rates.write_text(RATE_HEADER + "P2.5,INDOOR,38,4,120\n")
+            p = Path(temp) / "events.csv"
+            p.write_text("request_id,client,event_name,venue,wall_width_ft,wall_height_ft,pitch,start_date,days,distance_km,power_source\n"
+                         "EVR-001,Client,Event,Venue,10,10,P2.5,2026-11-01,1,5,MAINS\n")
+            with self.assertRaisesRegex(InputDataError, "received_date"):
+                load_event_requests(p, load_rate_card(rates))
+
+    def test_non_integer_distance_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            rates = Path(temp) / "rates.csv"
+            rates.write_text(RATE_HEADER + "P2.5,INDOOR,38,4,120\n")
+            p = Path(temp) / "events.csv"
+            p.write_text(REQUEST_HEADER + "EVR-001,2026-10-05,Client,Event,Venue,10,10,P2.5,2026-11-01,1,5.5,MAINS\n")
+            with self.assertRaisesRegex(InputDataError, "distance_km"):
+                load_event_requests(p, load_rate_card(rates))
+
 if __name__ == "__main__":
     unittest.main()

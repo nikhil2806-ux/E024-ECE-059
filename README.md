@@ -60,12 +60,12 @@ python3 -m unittest discover -s tests -v
 - Fleet capacity is shared per pitch across environments. A request reserves cabinets only if every event date is within capacity. An unavailable request reserves nothing and reports the largest date-specific shortfall.
 
 ## Project layout
-- `main.py`: command-file runner and application entry point
+- `main.py`: sequential command-file interpreter and application entry point
 - `src/models.py`: data models
-- `src/loader.py`: CSV parsing and validation
+- `src/loader.py`: CSV parsing and validation of required columns, identifiers, dates, numeric fields and allowed values
 - `src/fleet.py`: date-by-date fleet availability and reservation
 - `src/quotation.py`: quotation calculations
-- `src/writer.py`: evaluation-format CSV output
+- `src/writer.py`: evaluation-format CSV output, triggered by `PRINT_QUOTES` and `PRINT_FLEET`
 - `tests/`: unit and official-pack regression tests
 - `design_document.md`: design document source
 - `decision_log.md`: implementation decisions and rationale
