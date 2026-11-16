@@ -23,3 +23,14 @@
 | D-19 | Validate all documented request columns, ISO dates, EVR-nnn IDs, integer day/distance fields and allowed values before quoting. | Audit improvement to reject malformed input clearly. |
 | D-20 | Write quotations and fleet usage only when their respective PRINT commands are reached. | Audit improvement to make PRINT commands control output generation. |
 
+
+
+## Audit and documentation notes
+
+| ID | Decision | Reason / status |
+|---|---|---|
+| D-21 | Execute supported commands sequentially and validate command order and argument count. | Matches the command-file contract and makes output commands control when files are written. |
+| D-22 | Validate informational request columns even when they are not used in price calculations. | The official input schema requires these fields; validation catches incomplete records. |
+| D-23 | Keep informational `received_date`, `event_name`, and `venue` out of the calculation model after validation. | They do not affect the published quotation or fleet rules. |
+| D-24 | Derive request environment from the pitch's rate-card entry. | The official requests schema has no environment field and the official rate card has one entry per pitch. |
+| D-25 | Do not claim full expected-output parity for the 30 official requests. | The official sample pack explicitly states that expected outputs for this set are not provided; regression tests cover planted scenarios and schema. |

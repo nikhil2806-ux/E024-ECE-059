@@ -1,22 +1,40 @@
-# Five-minute demo script — E024-ECE-059
+# Five-minute demonstration script — E024-ECE-059
+
+## Before recording
+Open Terminal in the repository root. Confirm that `commands.txt`, `rate_card.csv`, and `requests.csv` are present.
 
 ## 0:00–0:30 — Introduction
-“Our project is ECE-059, an LED display rental quotation engine written in Python 3.10+. It reads a rate card and event requests, produces itemized quotations and checks fleet availability by date.”
+“Our project is ECE-059, an LED Display and Signage Rental Quotation Engine. It is a Python command-line application. It reads a rate card and event requests, calculates itemized rental quotations, checks cabinet availability, and writes two CSV output files.”
 
-## 0:30–1:10 — Architecture and files
-Show the repository. Explain `main.py`, `src/loader.py`, `src/quotation.py`, `src/fleet.py`, and `src/writer.py`. Point out that input and output are CSV files and there is no UI.
+## 0:30–1:10 — Repository and architecture
+Show the repository and identify `main.py`, `src/loader.py`, `src/models.py`, `src/quotation.py`, `src/fleet.py`, `src/writer.py`, and `tests/`. Mention Python 3.10+ and no third-party packages.
 
-## 1:10–2:10 — Demonstrate a quotation
-Run `python3 main.py`. Open `output/quotations.csv`. Explain requested area, cabinet rounding, billable area, rental charges, discount, setup, transport, operator/generator charges and GST.
+## 1:10–1:50 — Command file
+Open `commands.txt`. Explain that commands execute top-to-bottom: load rate card, load requests, quote all requests in received order, print quotations, and print fleet usage for the requested date range.
 
-## 2:10–3:00 — Explain weekend discount
-Show the test for a four-day event spanning a weekend. Explain that Saturday and Sunday rental rates are multiplied by 1.25 individually before the 10% multi-day discount is applied to the daily sum.
+Run:
+```bash
+python3 main.py
+```
+Show the processed request and quotation counts.
 
-## 3:00–4:00 — Demonstrate fleet handling
-Explain that fleet capacity is shared per pitch and checked for every requested date. If one date fails, the whole booking is unavailable and no cabinets are reserved for it. Show the fleet unit tests.
+## 1:50–2:40 — Quotation output
+Open `output/quotations.csv`. Explain cabinet count using ceiling, billable area, daily rental, weekend multiplier, duration discount, setup, transport, generator and operator charges, rounded subtotal and GST.
 
-## 4:00–4:40 — Run tests
-Run `python3 -m unittest discover -s tests -v`. Explain the boundary tests for 100 sq ft, 300 sq ft, 15 km, operator thresholds and competing requests.
+Point to a planted case in `sample_data_README.md`, such as EVR-002 (100 sq ft billable), EVR-003 (300 sq ft billable), or EVR-007 (exactly 15 km).
 
-## 4:40–5:00 — Close
-Mention validation, deterministic processing, the decision log, and that the official 30-request sample pack has been used for regression checks. The pack does not include expected quotation totals; its planted scenarios and required output schema are covered by our tests.
+## 2:40–3:40 — Fleet availability
+Show `src/fleet.py` and the planted fleet competition in `sample_data_README.md`. Explain that fleet capacity is shared per pitch and checked for every requested date. If any date exceeds capacity, the request is unavailable, the shortfall is the largest date-specific shortage, and no cabinets are reserved.
+
+## 3:40–4:30 — Validation and tests
+Run:
+```bash
+python3 -m unittest discover -s tests -v
+```
+At the audited revision, 26 tests pass. Mention command-order tests, invalid-input tests, fleet tests and quotation boundary tests.
+
+## 4:30–5:00 — Close
+“Our implementation uses the official Team E024 sample-data pack and produces the required `quotations.csv` and `fleet_usage.csv` schemas. The pack does not include expected totals for all 30 events, so we tested the published planted scenarios and the specified output structure.”
+
+## Demo discipline
+Do not claim multi-wall events or the early-booking discount are implemented. Do not claim every output value was compared against an official expected-output file; the sample pack says those expected totals are not supplied.

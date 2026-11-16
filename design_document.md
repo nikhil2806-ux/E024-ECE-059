@@ -2,142 +2,156 @@
 ## E024-ECE-059 — LED Display and Signage Rental Quotation Engine
 
 **Team:** E024  
-**Members:** Nandini Girish (1AT24UE046), Nikhil P Karamadi (1AT24UE047)  
+**Members:** Nandini Girish and Nikhil P Karamadi  
 **Section:** ECM B  
 **Language:** Python 3.10+  
-**Application type:** Command-file driven; no user interface
+**Application type:** Command-file-driven Python CLI; no graphical user interface
 
 ## 1. Problem statement
-Build a quotation engine for indoor and outdoor LED video walls. The application reads a rate card and event requests, calculates itemized quotations, checks cabinet availability across each requested date, and writes deterministic CSV output.
+The project implements a quotation engine for indoor and outdoor LED video-wall rentals. It reads a rate card and event requests, calculates an itemized quotation for each request, checks cabinet availability by pitch and date, and produces evaluation-format CSV files.
 
-## 2. Scope
-Included: input loading and validation, cabinet rounding, daily rental calculation, weekend rates, duration discounts, setup, outdoor rigging, transport, generator, operators, GST, fleet reservations, output files, and unit tests.
+## 2. Scope and constraints
+The implemented baseline includes CSV loading and validation, cabinet rounding, billable area, daily and weekend rental pricing, duration discounts, setup and outdoor rigging, transport, generator, operator charges, GST, fleet allocation, command-file execution, and CSV output. The optional stretch goals of multi-wall events in one quote and an early-booking discount are not implemented.
 
-Optional stretch goals not implemented in the baseline: multi-wall events in one quote and early-booking discount.
+## 3. System architecture
+| Module | Responsibility |
+|---|---|
+| `main.py` | Parses and executes commands in `commands.txt` order; coordinates the application |
+| `src/models.py` | Defines `RateCardEntry`, `EventRequest`, and `Quotation` data classes |
+| `src/loader.py` | Reads CSV files and validates headers, identifiers, dates, numeric values, ranges, pitches and power sources |
+| `src/fleet.py` | Tracks cabinets held by pitch and date; checks all dates before committing a reservation |
+| `src/quotation.py` | Calculates rental, discounts, setup, transport, generator, operators, GST and availability |
+| `src/writer.py` | Writes `quotations.csv` and `fleet_usage.csv` with fixed evaluation column order |
+| `tests/` | Unit and regression tests for commands, input validation, pricing, fleet logic and official sample scenarios |
 
-## 3. Architecture
-- `main.py`: orchestrates loading, validation, fleet checking, pricing and output.
-- `src/models.py`: typed data structures for rate-card entries, requests and quotations.
-- `src/loader.py`: validates required headers, data types, dates, ranges and duplicate keys.
-- `src/fleet.py`: maintains per-date cabinet allocations and commits only fully feasible bookings.
-- `src/quotation.py`: contains pure pricing calculations and calls the fleet manager.
-- `src/writer.py`: writes quotations, availability and errors as CSV.
-- `tests/`: tests calculations, fleet conflicts and invalid input.
+No third-party Python packages are required.
 
-## 4. Entities and relationships
-### RateCardEntry
-Attributes: `pitch`, `environment`, `rate_per_sq_ft_per_day`, `cabinet_area_sq_ft`, `fleet_cabinet_count`.
+## 4. Data model
+### `RateCardEntry`
+Stores `pitch`, `environment`, `rate_per_sq_ft_per_day`, `cabinet_area_sq_ft`, and `fleet_cabinet_count`. The rate card has one entry per pitch, and the fleet is shared by that pitch.
 
-### EventRequest
-Attributes: `request_id`, `client`, `width_ft`, `height_ft`, `pitch`, `environment`, `start_date`, `days`, `distance_km`, `power_source`.
+### `EventRequest`
+Stores `request_id`, `client`, `width_ft`, `height_ft`, `pitch`, `environment`, `start_date`, `days`, `distance_km`, and `power_source`. The official requests file does not contain an environment column; the loader obtains environment from the rate-card entry for the requested pitch. The request model does not retain the informational `received_date`, `event_name`, or `venue` fields after validating them.
 
-### Quotation
-Contains requested area, cabinet count, billable area, rental gross, discount, net rental, setup, rigging, transport, generator, operator count and charge, pre-tax total, GST, grand total, and availability status/shortfall.
+### `Quotation`
+Stores request and calculation results, including status, requested area, cabinet count, billable area, gross rental, discount, net rental, setup, rigging, transport, generator, operator count and charge, pre-tax total, GST, grand total, and fleet shortfall details.
 
 ### Fleet allocation
-Identified by `(pitch, date)`. Fleet capacity is shared per pitch. Each accepted event reserves its required cabinet count on each date; the booking is committed only after every requested date passes.
-
-Relationship summary:
-- One rate-card entry is selected by each request's `pitch`; its environment determines the outdoor setup surcharge.
-- One request produces one quotation.
-- One accepted request creates one allocation per rental date.
-- A rejected request creates no allocations.
+Fleet availability is keyed by `(pitch, date)`, not by environment. An accepted request reserves its required cabinet count on each event date. A request that fails on any date does not reserve cabinets on any date.
 
 ## 5. Business rules
-- **BR-01:** Requested area = width × height, in square feet.
-- **BR-02:** Cabinet count = ceiling(requested area / cabinet area).
-- **BR-03:** Billable area = cabinet count × cabinet area.
-- **BR-04:** Daily rental = billable area × rate; Saturday/Sunday multiplier = 1.25.
-- **BR-05:** Sum daily rental charges, then discount 10% for 4–7 days or 20% for 8+ days; otherwise no discount.
-- **BR-06:** Setup/dismantle = ₹4,000 through 100 sq ft; above 100 sq ft, ₹4,000 + ₹35 × (billable area − 100).
-- **BR-07:** Outdoor rigging surcharge = 20% of setup; indoor surcharge = zero.
-- **BR-08:** Transport per vehicle = ₹45 × max(0, distance − 15) × 2.
-- **BR-09:** If billable area >300 sq ft, use two vehicles; otherwise one.
-- **BR-10:** Generator charge = ₹2,500 × rental days only for GENERATOR power.
-- **BR-11:** Operator count = ceiling(billable area / 150); charge = count × ₹1,500 × days.
-- **BR-12:** Check requested cabinet capacity for each pitch/date; indoor and outdoor do not create separate fleet pools.
-- **BR-13:** If any date is over capacity, mark UNAVAILABLE and record shortfall; do not reserve any date for that request.
-- **BR-14:** GST = 18% of the pre-tax total.
-- **BR-15:** Round printed monetary lines to whole rupees using the documented rounding policy.
-- **BR-16:** Validate required input fields, allowed values, numeric ranges, dates, duplicate identifiers and rate-card keys.
+1. Requested wall area = width × height.
+2. Cabinet count = ceiling(requested area ÷ cabinet area).
+3. Billable area = cabinet count × cabinet area.
+4. Daily rental = billable area × rate per sq ft per day.
+5. Saturday and Sunday rental days use a 1.25 multiplier.
+6. Sum daily rental charges, then apply a rental discount: 10% for 4–7 days; 20% for 8 days; otherwise no duration discount.
+7. Setup/dismantle is ₹4,000 for billable area up to and including 100 sq ft. Above 100 sq ft, setup = ₹4,000 + ₹35 × (billable area − 100).
+8. Outdoor setup adds a 20% rigging surcharge.
+9. Transport is free through 15 km. Above 15 km, transport per vehicle = ₹45 × 2 × (distance − 15).
+10. Billable area strictly above 300 sq ft requires two vehicles; otherwise one.
+11. Generator charge = ₹2,500 × event days when power source is `GENERATOR`; otherwise zero.
+12. Operator count = ceiling(billable area ÷ 150); operator charge = count × ₹1,500 × event days.
+13. Fleet is checked for each pitch/date. Requests are processed in file order.
+14. A request is `AVAILABLE` only if every event date has enough remaining cabinets. Otherwise it is `UNAVAILABLE`; shortfall is the largest date-specific excess over fleet capacity. Unavailable requests reserve nothing.
+15. Each monetary line is calculated exactly and rounded half-up to a whole rupee. The subtotal is the sum of rounded charge lines. GST is 18% of that subtotal, rounded half-up. Total = subtotal + GST.
 
-## 6. Calculation order
-1. Validate request and locate its rate-card entry.
-2. Calculate requested area, cabinet count and billable area.
-3. Calculate each day's rental charge, including weekend multiplier.
-4. Sum daily rental charges and apply the applicable rental discount.
-5. Calculate setup, outdoor rigging, transport, generator and operator charges.
-6. Check fleet availability across all dates; reserve only if all dates pass.
-7. Round output lines according to the chosen policy.
-8. Sum pre-tax charge lines, calculate GST, and produce grand total.
+## 6. Command interpreter and execution flow
+`main.py` reads `commands.txt` from top to bottom. Blank lines and lines beginning with `#` are ignored. Each command is validated for its name and argument count.
 
-The fleet decision is independent of the monetary total. An unavailable request is still reported with its availability status and shortfall.
+Supported commands:
+- `LOAD_RATE_CARD|file`
+- `LOAD_REQUESTS|file`
+- `QUOTE_ALL`
+- `PRINT_QUOTES`
+- `PRINT_FLEET|from_date|to_date`
 
-## 7. State diagram
+The rate card must be loaded before requests; both must be loaded before `QUOTE_ALL`. Output files are written only when their corresponding print commands are reached. Fleet report dates must be valid ISO dates, and the end date cannot precede the start date. Required output commands must be present.
+
+Execution flow:
+1. Parse command file.
+2. Load and validate rate card.
+3. Load and validate requests.
+4. Quote requests in file order, checking and reserving fleet as each request is processed.
+5. On `PRINT_QUOTES`, write quotations.
+6. On `PRINT_FLEET`, write pitch/date fleet usage for the requested period.
+
+## 7. State model
 ```text
-RECEIVED
-   |
-   v
-VALIDATING ---- invalid ----> INPUT_ERROR
-   |
-   v
-RATE_CARD_LOOKUP ---- missing rate ----> INPUT_ERROR
-   |
-   v
-CALCULATING_QUOTE
-   |
-   v
-CHECKING_ALL_DATES
-   |                 |
-   | all dates pass  | one or more dates fail
-   v                 v
-AVAILABLE          UNAVAILABLE
-   |                 |
-   v                 v
-RESERVE_CAPACITY   DO_NOT_RESERVE
-   |                 |
-   +--------+--------+
-            v
-      WRITE_OUTPUT
+START
+  |
+  v
+READ_COMMANDS
+  |
+  v
+LOAD_RATE_CARD ---- invalid/missing ----> ERROR
+  |
+  v
+LOAD_REQUESTS ----- invalid/missing ----> ERROR
+  |
+  v
+QUOTE_ALL
+  |
+  v
+FOR EACH REQUEST (received order)
+  |
+  v
+CALCULATE QUOTE
+  |
+  v
+CHECK EVERY EVENT DATE
+  |                         |
+  | all dates available    | any date over capacity
+  v                         v
+AVAILABLE                 UNAVAILABLE
+  |                         |
+  v                         v
+RESERVE ALL DATES         RESERVE NOTHING
+  |                         |
+  +------------+------------+
+               |
+               v
+       NEXT REQUEST / DONE
+               |
+       +-------+--------+
+       |                |
+       v                v
+ PRINT_QUOTES      PRINT_FLEET
+       |                |
+       v                v
+ quotations.csv    fleet_usage.csv
 ```
 
-## 8. Input formats
-`rate_card.csv` fields:
-`pitch,environment,rate_per_sqft_day_rs,cabinet_area_sqft,fleet_cabinets`
+## 8. Input and output formats
+### Inputs
+`rate_card.csv` columns: `pitch,environment,rate_per_sqft_day_rs,cabinet_area_sqft,fleet_cabinets`
 
-`requests.csv` fields:
-`request_id,received_date,client,event_name,venue,wall_width_ft,wall_height_ft,pitch,start_date,days,distance_km,power_source`
+`requests.csv` columns: `request_id,received_date,client,event_name,venue,wall_width_ft,wall_height_ft,pitch,start_date,days,distance_km,power_source`
 
-Dates use `YYYY-MM-DD`. Environment values are `INDOOR` or `OUTDOOR`; power values are `GENERATOR` or `MAINS`.
+`commands.txt` contains ordered commands. Dates use `YYYY-MM-DD`; the official sample pack covers November and December 2026.
 
-## 9. Output formats
-- `quotations.csv`: one row per request with the official 15-column evaluation schema.
-- `fleet_usage.csv`: one row per pitch per date with held, total and free cabinets.
+### Outputs
+`quotations.csv` contains one row per request, in request-file order. Column order:
+`request_id,pitch,cabinets,billable_sqft,rental_gross_rs,multiday_discount_rs,setup_rs,transport_rs,generator_rs,operator_rs,subtotal_rs,gst_rs,total_rs,availability,shortfall_cabinets`
 
-## 10. Edge-case test plan
-1. Billable area exactly 100 sq ft: setup ₹4,000.
-2. Billable area exactly 300 sq ft: no second vehicle.
-3. Billable area just above 300 sq ft: second vehicle.
-4. Four-day event spanning a weekend: weekend multipliers before 10% discount.
-5. Distance exactly 15 km: transport is free.
-6. Competing requests for remaining fleet: deterministic input order.
-7. A multi-day booking fails on one date: no partial reservation.
-8. Width/height produce fractional cabinet count: ceiling is used.
-9. Exactly 150 sq ft versus 151 sq ft: one operator versus two.
-10. Generator versus mains power.
-11. Indoor versus outdoor rigging.
-12. Eight-day rental discount.
-13. Invalid dates, negative distances, zero dimensions, unsupported power and duplicate rate entries.
-14. Half-rupee rounding uses the documented rule.
+`fleet_usage.csv` contains one row per pitch per date, ordered by date then pitch. Column order:
+`date,pitch,cabinets_held,fleet_cabinets,free_cabinets`
 
-## 11. Official sample-pack conventions
-The official sample-pack README resolves the main implementation assumptions: setup above 100 sq ft is ₹4,000 + ₹35 per excess sq ft; fleet is tracked per pitch/date; unavailable requests still carry a full quotation; shortfall is the maximum date-specific shortage; each line is rounded half-up before subtotal and GST; and output filenames and column order are fixed. The sample pack does not provide expected quotation values for these 30 requests, so the planted scenarios are used as regression checks.
+## 9. Validation
+The loader checks required headers, duplicate headers, required fields, supported pitch values, unique `EVR-nnn` request IDs, valid ISO dates, positive dimensions, integer rental days from 1 through 8, non-negative integer distance, supported power sources, non-negative rates, positive cabinet area, and non-negative integer fleet counts. It rejects duplicate pitch entries because the official fleet is per pitch.
 
-## 12. Testing and reproducibility
-Run tests with:
-`python3 -m unittest discover -s tests -v`
+The command interpreter rejects unknown commands, incorrect argument counts, invalid command ordering, invalid fleet-report dates and missing required print commands.
 
-Run the application with:
-`python3 main.py`
+## 10. Test strategy and edge cases
+Run `python3 -m unittest discover -s tests -v`.
 
-The root-level `rate_card.csv`, `requests.csv`, and `commands.txt` are the official Team E024 sample-data files supplied by 10 SECONDS. The expected-output schema and planted scenarios are documented in `sample_data_README.md`.
+The current suite contains 26 tests covering command execution order, unknown commands, missing output commands, invalid sequencing, fleet contention, different dates, no partial reservation after a failed multi-day request, duplicate pitch, invalid dimensions, missing required fields, invalid integer distance, official input loading, output schema, planted scenarios, cabinet rounding, 100 and 300 sq ft boundaries, transport at 15 km, weekend calculation before duration discount, 8-day discount, generator charge, operator threshold, outdoor rigging and half-up rounding.
+
+The official sample-data README does not provide expected totals for all 30 requests. Tests therefore verify its stated planted scenarios, output schema and business-rule behavior; no claim is made that all 30 rows have been compared to unpublished expected totals.
+
+## 11. Reproducibility
+Requirements: Python 3.10+; no third-party dependencies.
+
+Run the application from the project root using `python3 main.py`. Run tests using `python3 -m unittest discover -s tests -v`.
+
+The root-level `rate_card.csv`, `requests.csv`, and `commands.txt` are the official Team E024 sample-data files supplied for this assignment.
